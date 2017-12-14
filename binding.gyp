@@ -31,14 +31,11 @@
       ],
       "include_dirs": ["<!(node -e \"require('nan')\")"],
       "cflags": [
-          "-std=c++11",
-          "-pthread",
-          "-fexceptions",
-          "-O3",
-          "-Wall",
-          "-pedantic",
-          "-DUSE_SSE",
-          "-DUSE_SSE2"
+        "-std=c++11",
+        "-pthread",
+        "-Wsign-compare",
+        "-fexceptions",
+        "-O0"
       ],
       "conditions": [
           [ 'OS!="win"', {
