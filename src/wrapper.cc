@@ -17,8 +17,8 @@
 using fasttext::model_name;
 using fasttext::entry_type;
 
-constexpr int32_t FASTTEXT_VERSION = 12; /* Version 1b */
-constexpr int32_t FASTTEXT_FILEFORMAT_MAGIC_INT32 = 793712314;
+constexpr int32_t NODE_FASTTEXT_VERSION = 12; /* Version 1b */
+constexpr int32_t NODE_FASTTEXT_FILEFORMAT_MAGIC_INT32 = 793712314;
 
 Wrapper::Wrapper(std::string modelFilename)
     : quant_(false),
@@ -41,19 +41,19 @@ bool Wrapper::checkModel(std::istream& in) {
     int32_t magic;
     int32_t version;
     in.read((char*)&(magic), sizeof(int32_t));
-    if (magic != FASTTEXT_FILEFORMAT_MAGIC_INT32) {
+    if (magic != NODE_FASTTEXT_FILEFORMAT_MAGIC_INT32) {
         return false;
     }
     in.read((char*)&(version), sizeof(int32_t));
-    if (version != FASTTEXT_VERSION) {
+    if (version != NODE_FASTTEXT_VERSION) {
         return false;
     }
     return true;
 }
 
 void Wrapper::signModel(std::ostream& out) {
-    const int32_t magic = FASTTEXT_FILEFORMAT_MAGIC_INT32;
-    const int32_t version = FASTTEXT_VERSION;
+    const int32_t magic = NODE_FASTTEXT_FILEFORMAT_MAGIC_INT32;
+    const int32_t version = NODE_FASTTEXT_VERSION;
     out.write((char*)&(magic), sizeof(int32_t));
     out.write((char*)&(version), sizeof(int32_t));
 }
