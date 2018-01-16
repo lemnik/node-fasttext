@@ -21,10 +21,17 @@ constexpr int32_t FASTTEXT_VERSION = 12; /* Version 1b */
 constexpr int32_t FASTTEXT_FILEFORMAT_MAGIC_INT32 = 793712314;
 
 Wrapper::Wrapper(std::string modelFilename)
-    : quant_(false),
+    : wordVectors_(nullptr),
+        quant_(false),
         modelFilename_(modelFilename),
         isLoaded_(false),
         isPrecomputed_(false) {}
+
+Wrapper::~Wrapper() {
+    if(wordVectors_ != nullptr) {
+        delete wordVectors_;
+    }
+}
 
 void Wrapper::getVector(Vector& vec, const std::string& word) {
     const std::vector<int32_t>& ngrams = dict_->getSubwords(word);
@@ -127,15 +134,19 @@ void Wrapper::precomputeWordVectors() {
         precomputeMtx_.unlock();
         return;
     }
-    Matrix wordVectors(dict_->nwords(), args_->dim);
-    wordVectors_ = wordVectors;
+    
+    if(wordVectors_ != nullptr){
+        delete wordVectors_;
+    }
+
+    wordVectors_ = new Matrix(dict_->nwords(), args_->dim);
     Vector vec(args_->dim);
-    wordVectors_.zero();
+    wordVectors_->zero();
     for (int32_t i = 0; i < dict_->nwords(); i++) {
         std::string word = dict_->getWord(i);
         getVector(vec, word);
         real norm = vec.norm();
-        wordVectors_.addRow(vec, i, 1.0 / norm);
+        wordVectors_->addRow(vec, i, 1.0 / norm);
     }
     isPrecomputed_ = true;
     precomputeMtx_.unlock();
@@ -152,7 +163,7 @@ std::vector<PredictResult> Wrapper::findNN(const Vector& queryVec, int32_t k,
     Vector vec(args_->dim);
     for (int32_t i = 0; i < dict_->nwords(); i++) {
         std::string word = dict_->getWord(i);
-        real dp = wordVectors_.dotRow(queryVec, i);
+        real dp = wordVectors_->dotRow(queryVec, i);
         heap.push(std::make_pair(dp / queryNorm, word));
     }
 
@@ -186,7 +197,7 @@ std::vector<PredictResult> Wrapper::predict (std::string sentence, int32_t k) {
     std::vector<int32_t> words, labels;
     std::istringstream in(sentence);
 
-    dict_->getLine(in, words, labels, model_->rng);
+    dict_->getLine(in, words, labels);
 
     // std::cerr << "Got line!" << std::endl;
 
@@ -197,7 +208,7 @@ std::vector<PredictResult> Wrapper::predict (std::string sentence, int32_t k) {
     Vector hidden(args_->dim);
     Vector output(dict_->nlabels());
     std::vector<std::pair<real,int32_t>> modelPredictions;
-    model_->predict(words, k, modelPredictions, hidden, output);
+    model_->predict(words, k, 0, modelPredictions, hidden, output);
 
     PredictResult response;
 

@@ -37,7 +37,8 @@ class Wrapper {
         std::shared_ptr<QMatrix> qoutput_;
 
         std::shared_ptr<Model> model_;
-        Matrix wordVectors_;
+
+        Matrix* wordVectors_;
 
         // std::atomic<int64_t> tokenCount;
         // clock_t start;
@@ -59,6 +60,7 @@ class Wrapper {
         bool isPrecomputed_;
     public:
         Wrapper(std::string modelFilename);
+        ~Wrapper();
 
         void getVector(Vector&, const std::string&);
 

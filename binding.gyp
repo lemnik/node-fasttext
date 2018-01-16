@@ -36,6 +36,7 @@
           "-fexceptions",
           "-O3",
           "-Wall",
+          "-Wno-sign-compare",
           "-pedantic",
           "-DUSE_SSE",
           "-DUSE_SSE2"
